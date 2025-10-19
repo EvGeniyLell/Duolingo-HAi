@@ -1,0 +1,21 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "username": "Username"
+        },
+        "description": "Enter the username of the user you want to observe."
+      }
+    },
+    "error": {
+      "auth": "User doesnt exist. Please check your username.",
+      "invalid_auth": "Invalid authentication",
+      "unknown": "Unexpected error"
+    },
+    "abort": {
+      "already_configured": "Account is already configured"
+    }
+  },
+  "title": "Duolingo Observer"
+}

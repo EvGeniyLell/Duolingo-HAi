@@ -1,0 +1,7 @@
+{
+    "name": "Duolingo Observer",
+    "description": "Integrate Duolingo user data into Home Assistant.",
+    "hacs": "1.6.0",
+    "homeassistant": "2025.1.0",
+    "render_readme": true
+}
