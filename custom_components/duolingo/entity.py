@@ -13,7 +13,7 @@ from propcache import cached_property
 
 from .const import (
     NAME,
-    DOMAIN,
+    DOMAIN, VERSION,
 )
 from .dto import UserDto
 
@@ -29,6 +29,12 @@ class DuolingoEntity(CoordinatorEntity):
         """Initialize the entity."""
         super().__init__(coordinator)
         self.config_entry = config_entry
+        self.coordinator.async_add_listener(self._handle_coordinator_update)
+
+    def _handle_coordinator_update(self) -> None:
+        """Clear the cached user_dto property."""
+        if "user_dto" in self.__dict__:
+            del self.__dict__["user_dto"]
 
     @cached_property
     def user_dto(self) -> UserDto:
@@ -51,6 +57,7 @@ class DuolingoEntity(CoordinatorEntity):
         return DeviceInfo(
             name=self.device_name,
             identifiers={(DOMAIN, self.user_dto.username)},
+            model=f"EI_DUO_{VERSION}_HAi",
             manufacturer=NAME,
             entry_type=DeviceEntryType.SERVICE,
         )

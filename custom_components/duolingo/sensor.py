@@ -25,7 +25,7 @@ async def async_setup_entry(
     coordinator = hass.data[DOMAIN][entry.entry_id]
     sensors: list[SensorEntity] = [
         DuolingoStreakLengthSensor(coordinator, entry),
-        DuolingoXPSensor(coordinator, entry),
+        DuolingoTotalXPSensor(coordinator, entry),
     ]
 
     user_dto = UserDto.from_ha(coordinator.data)
@@ -38,7 +38,7 @@ async def async_setup_entry(
 
 
 class DuolingoStreakLengthSensor(DuolingoEntity, SensorEntity):
-    """Implementation of the Duolingo streak sensor."""
+    """Implementation of the Duolingo Streak Length sensor."""
 
     @property
     def name(self) -> str:
@@ -74,8 +74,8 @@ class DuolingoStreakLengthSensor(DuolingoEntity, SensorEntity):
         }
 
 
-class DuolingoXPSensor(DuolingoEntity, SensorEntity):
-    """Implementation of the Duolingo XP sensor."""
+class DuolingoTotalXPSensor(DuolingoEntity, SensorEntity):
+    """Implementation of the Duolingo Total XP sensor."""
 
     @property
     def name(self) -> str:
