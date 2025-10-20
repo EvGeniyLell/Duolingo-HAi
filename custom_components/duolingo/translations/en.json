@@ -10,8 +10,8 @@
     },
     "error": {
       "auth": "User doesnt exist. Please check your username.",
-      "invalid_auth": "Invalid authentication",
-      "unknown": "Unexpected error"
+      "invalid_auth": "Invalid authentication.",
+      "unknown": "Unexpected error."
     },
     "abort": {
       "already_configured": "Account is already configured"

@@ -18,7 +18,7 @@ CONF_USERNAME = "username"
 # Attribution - extra_state_attributes
 ATTR_DUO_DATA_PROVIDER = "Data provided by Duolingo"
 ATTR_DUO_STREAK_LENGTH = "Streak length days"
-ATTR_DUO_STREAK_EXTENDED_TODAY = "Streak extended today"
+ATTR_DUO_STREAK_TODAY = "Streak extended today"
 ATTR_DUO_USERNAME = "Username"
 ATTR_DUO_COURSE_ID = "Course ID"
 

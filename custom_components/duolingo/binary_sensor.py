@@ -1,6 +1,5 @@
 """Support for a Duolingo data sensor."""
 
-import logging
 from typing import Any
 
 from homeassistant.components.binary_sensor import BinarySensorEntity
@@ -9,13 +8,11 @@ from homeassistant.const import ATTR_ATTRIBUTION
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from custom_components.duolingo.entity import DuolingoEntity
 from .const import (
-    DOMAIN, ATTR_DUO_DATA_PROVIDER, ATTR_DUO_STREAK_EXTENDED_TODAY,
+    DOMAIN, ATTR_DUO_DATA_PROVIDER, ATTR_DUO_STREAK_TODAY,
     ATTR_DUO_STREAK_LENGTH,
 )
-
-_LOGGER = logging.getLogger(__name__)
+from .entity import DuolingoEntity
 
 
 async def async_setup_entry(
@@ -34,12 +31,12 @@ class DuolingoStreakTodaySensor(DuolingoEntity, BinarySensorEntity):
     @property
     def unique_id(self) -> str:
         """Return a unique ID to use for this entity."""
-        return f"{DOMAIN}_{self.user_dto.username}_streak_today"
+        return f"{self.device_name}_streak_today"
 
     @property
     def name(self) -> str:
         """Return the name of the binary_sensor."""
-        return f"{DOMAIN}_{self.user_dto.username}_streak_today"
+        return f"{self.device_name}_streak_today"
 
     @property
     def is_on(self) -> bool:
@@ -55,10 +52,7 @@ class DuolingoStreakTodaySensor(DuolingoEntity, BinarySensorEntity):
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the state attributes."""
         return {
-            ATTR_ATTRIBUTION:
-                ATTR_DUO_DATA_PROVIDER,
-            ATTR_DUO_STREAK_EXTENDED_TODAY:
-                self.user_dto.streak_today,
-            ATTR_DUO_STREAK_LENGTH:
-                self.user_dto.streak_length,
+            ATTR_ATTRIBUTION: ATTR_DUO_DATA_PROVIDER,
+            ATTR_DUO_STREAK_TODAY: self.user_dto.streak_today,
+            ATTR_DUO_STREAK_LENGTH: self.user_dto.streak_length,
         }
