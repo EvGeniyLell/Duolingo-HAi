@@ -12,6 +12,7 @@ from propcache import cached_property
 from .const import (
     DOMAIN, ATTR_DUO_DATA_PROVIDER, ATTR_DUO_USERNAME, ATTR_DUO_COURSE_ID,
 )
+from .dto import UserDto
 from .entity import DuolingoEntity
 
 
@@ -27,10 +28,10 @@ async def async_setup_entry(
         DuolingoXPSensor(coordinator, entry),
     ]
 
-    courses = coordinator.data.get("courses", [])
-    for course in courses:
+    user_dto = UserDto.from_ha(coordinator.data)
+    for course_id in user_dto.courses_xp.keys():
         sensors.append(
-            DuolingoCourseXPSensor(coordinator, entry, course["id"])
+            DuolingoCourseXPSensor(coordinator, entry, course_id)
         )
 
     async_add_devices(sensors)

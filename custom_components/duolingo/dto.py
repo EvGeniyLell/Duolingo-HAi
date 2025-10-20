@@ -28,7 +28,7 @@ class UserDto:
         )
 
     @property
-    def to_ha(self) -> Dict[str:int]:
+    def to_ha(self) -> dict:
         """Convert UserDto to a coordinator.data."""
         return {
             UserDto.HA_MAPPING_USERNAME: self.username,

@@ -3,14 +3,11 @@
 """Adds config flow for Duolingo."""
 
 import logging
-from typing import Any, cast
+from typing import Any
 
 import voluptuous as vol
 from homeassistant import config_entries
-from homeassistant.config_entries import (
-    ConfigFlow,
-    ConfigFlowResult,
-)
+from homeassistant.data_entry_flow import FlowResult
 
 from .api import DuolingoApiClient
 from .const import (
@@ -21,7 +18,7 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 
-class DuolingoFlowHandler(ConfigFlow, domain=DOMAIN):
+class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Config flow for Duolingo."""
 
     VERSION = 1
@@ -33,7 +30,7 @@ class DuolingoFlowHandler(ConfigFlow, domain=DOMAIN):
 
     async def async_step_user(
             self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
+    ) -> FlowResult:
         """Handle a flow initialized by the user."""
         self._errors = {}
 
@@ -46,29 +43,23 @@ class DuolingoFlowHandler(ConfigFlow, domain=DOMAIN):
                 if valid:
                     # Store username in config entry
                     config_data = {CONF_USERNAME: username}
-                    return cast(ConfigFlowResult, self.async_create_entry(
-                        title=username,
-                        data=config_data,
-                    ))
+                    return self.async_create_entry(title=username,
+                                                   data=config_data)
                 self._errors["base"] = "auth"
             except Exception:  # noqa: BLE001
-                self._errors["base"] = "unknown"
-        else:
-            user_input = {
-                CONF_USERNAME: "",  # Provide defaults for form
-            }
+                self._errors["base"] = "auth"
 
-        return cast(
-            ConfigFlowResult,
-            await self._show_config_form(user_input),
-        )
+            return await self._show_config_form(user_input)
+
+        user_input = {CONF_USERNAME: ""}
+        return await self._show_config_form(user_input)
 
     async def _show_config_form(
             self,
             user_input: dict[str, Any]
-    ) -> ConfigFlowResult:
+    ) -> FlowResult:
         """Show the configuration form to edit location data."""
-        result = self.async_show_form(
+        return self.async_show_form(
             step_id="user",
             data_schema=vol.Schema(
                 {
@@ -80,7 +71,6 @@ class DuolingoFlowHandler(ConfigFlow, domain=DOMAIN):
             ),
             errors=self._errors,
         )
-        return cast(ConfigFlowResult, result)
 
     async def _test_credentials(self, username: str) -> bool:
         """Return true if credentials is valid."""
