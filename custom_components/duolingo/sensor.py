@@ -1,5 +1,6 @@
 """Support for Duolingo streak sensors."""
 import logging
+import re
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
@@ -52,8 +53,9 @@ class DuolingoStreakLengthSensor(DuolingoEntity, SensorEntity):
     @property
     def name(self) -> str:
         """Return the name of the sensor."""
-        _LOGGER.warning(self.coordinator.translations)
-        return f"{super().name} Streak Length"
+        return self.translation_sensors("streak_length", {
+            "name": self.user_dto.name,
+        })
 
     @cached_property
     def unique_id(self) -> str:
@@ -90,9 +92,11 @@ class DuolingoTotalXPSensor(DuolingoEntity, SensorEntity):
     @property
     def name(self) -> str:
         """Return the name of the sensor."""
-        return f"{super().name} XP"
+        return self.translation_sensors("total_xp", {
+            "name": self.user_dto.name,
+        })
 
-    @property
+    @cached_property
     def unique_id(self) -> str:
         """Return a unique ID to use for this entity."""
         return f"{super().unique_id}_xp"
@@ -128,17 +132,28 @@ class DuolingoCourseXPSensor(DuolingoEntity, SensorEntity):
         super().__init__(coordinator, config_entry)
         self.course_id = course_id
 
+    def translation_courses(self, course_id: str) -> str:
+        """Return the translated string for course id."""
+        match = re.search(r"_(\w+)_", course_id)
+        key = match.group(1) if match else course_id
+        full_key = f"component.{DOMAIN}.common.courses.{key}"
+        _LOGGER.warning(f"Translating course key: {full_key}")
+        return self.coordinator.translations.get(full_key, key)
+
     @property
     def course_name(self) -> str:
         """Return the translated course name."""
-        return f"{self.course_id}"
+        return self.translation_courses(self.course_id)
 
     @property
     def name(self) -> str:
         """Return the name of the sensor."""
-        return f"2{super().name} {self.course_name} XP"
+        return self.translation_sensors("course_xp", {
+            "name": self.user_dto.name,
+            "course_name": self.course_name
+        })
 
-    @property
+    @cached_property
     def unique_id(self) -> str:
         """Return a unique ID to use for this entity."""
         return f"{super().unique_id}_{self.course_id}_xp"
@@ -156,7 +171,7 @@ class DuolingoCourseXPSensor(DuolingoEntity, SensorEntity):
     @property
     def icon(self) -> str:
         """Return the icon to use in the frontend."""
-        return "mdi:star"
+        return "mdi:progress-star"
 
     @property
     def extra_state_attributes(self) -> dict[str, object]:

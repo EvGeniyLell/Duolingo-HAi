@@ -81,7 +81,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             dto = await self.hass.async_add_executor_job(
                 DuolingoApiClient.get_user_identifiers, username
             )
-            _LOGGER.warning(f"dto: {dto.to_dict}")
             return dto
 
         except Exception as exception:

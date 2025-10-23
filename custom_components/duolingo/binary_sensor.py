@@ -39,7 +39,9 @@ class DuolingoStreakTodaySensor(DuolingoEntity, BinarySensorEntity):
     @property
     def name(self) -> str:
         """Return the name of the binary_sensor."""
-        return f"{super().name} Streak Today"
+        return self.translation_sensors("streak_today", {
+            "name": self.user_dto.name,
+        })
 
     @property
     def unique_id(self) -> str:

@@ -18,10 +18,35 @@
   },
   "common": {
     "sensors": {
-      "streak_today_name": "Duo {name}'s Streak Today",
-      "streak_length_name": "Duo {name}'s Streak Length",
-      "total_xp_name": "Duo {name}'s Total XP",
-      "courses_xp_name": "Duo {name}'s {course_name} XP"
+      "streak_today": "Duo {name}'s Streak Today",
+      "streak_length": "Duo {name}'s Streak Length",
+      "total_xp": "Duo {name}'s Total XP",
+      "course_xp": "Duo {name}'s {course_name} XP"
+    },
+    "courses": {
+      "EN": "English",
+      "UK": "Ukrainian",
+      "ES": "Spanish",
+      "FR": "French",
+      "DE": "German",
+      "IT": "Italian",
+      "PT": "Portuguese",
+      "NL": "Dutch",
+      "GA": "Irish",
+      "SV": "Swedish",
+      "DA": "Danish",
+      "NO": "Norwegian",
+      "JA": "Japanese",
+      "KO": "Korean",
+      "ZH": "Chinese",
+      "TR": "Turkish",
+      "EL": "Greek",
+      "HE": "Hebrew",
+      "HI": "Hindi",
+      "VI": "Vietnamese",
+      "PL": "Polish",
+      "CS": "Czech",
+      "RO": "Romanian"
     }
   },
   "title": "Duolingo Observer"

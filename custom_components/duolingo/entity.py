@@ -1,4 +1,6 @@
 """DuolingoEntity class."""
+import logging
+import re
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.device_registry import (
@@ -18,6 +20,8 @@ from .const import (
 )
 from .dto import UserDto
 
+_LOGGER = logging.getLogger(__name__)
+
 
 class DuolingoEntity(CoordinatorEntity):
     """Base entity for Duolingo integration."""
@@ -31,6 +35,25 @@ class DuolingoEntity(CoordinatorEntity):
         super().__init__(coordinator)
         self.coordinator = coordinator
         self.config_entry = config_entry
+        _LOGGER.warning("Setup new entry: %s", config_entry)
+
+    def translation_sensors(
+            self,
+            alias: str,
+            data: dict[str, str]
+    ) -> str | None:
+        """Return the translated string for course id."""
+        full_key = f"component.{DOMAIN}.common.sensors.{alias}"
+        t_string = self.coordinator.translations.get(full_key)
+        if not t_string:
+            _LOGGER.warning(f"Translation missing for key: {full_key}")
+            return None
+
+        for key, value in data.items():
+            pattern = r"\{" + re.escape(key) + r"\}"
+            t_string = re.sub(pattern, str(value), t_string)
+        _LOGGER.warning(f"Translated string for {alias}: {t_string}")
+        return t_string
 
     @property
     def user_dto(self) -> UserDto:
@@ -51,7 +74,7 @@ class DuolingoEntity(CoordinatorEntity):
     def device_info(self) -> DeviceInfo:
         """Return device information about this entity."""
         return DeviceInfo(
-            name=self.name,
+            name=f"Duo {self.user_dto.username} Observer",
             identifiers={(DOMAIN, self.user_dto.username)},
             model=f"User Observer {VERSION}",
             manufacturer=NAME,
