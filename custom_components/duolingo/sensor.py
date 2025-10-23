@@ -1,5 +1,5 @@
 """Support for Duolingo streak sensors."""
-
+import logging
 from typing import Any
 
 from homeassistant.components.sensor import SensorEntity
@@ -9,11 +9,15 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from propcache import cached_property
 
+from . import DuolingoDataUpdateCoordinator
 from .const import (
     DOMAIN, ATTR_DUO_DATA_PROVIDER, ATTR_DUO_USERNAME, ATTR_DUO_COURSE_ID,
+    ATTR_DUO_NAME,
 )
 from .dto import UserDto
 from .entity import DuolingoEntity
+
+_LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
@@ -23,6 +27,12 @@ async def async_setup_entry(
 ) -> None:
     """Set up sensor platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
+    if not isinstance(coordinator, DuolingoDataUpdateCoordinator):
+        _LOGGER.error(
+            "Coordinator is not of type DuolingoDataUpdateCoordinator"
+        )
+        return
+
     sensors: list[SensorEntity] = [
         DuolingoStreakLengthSensor(coordinator, entry),
         DuolingoTotalXPSensor(coordinator, entry),
@@ -43,12 +53,12 @@ class DuolingoStreakLengthSensor(DuolingoEntity, SensorEntity):
     @property
     def name(self) -> str:
         """Return the name of the sensor."""
-        return f"{self.device_name}_streak_length"
+        return f"{super().name} Streak Length"
 
     @cached_property
     def unique_id(self) -> str:
         """Return a unique ID to use for this entity."""
-        return f"{self.device_name}_streak_length"
+        return f"{super().unique_id}_streak_length"
 
     @property
     def native_value(self) -> int:
@@ -80,12 +90,12 @@ class DuolingoTotalXPSensor(DuolingoEntity, SensorEntity):
     @property
     def name(self) -> str:
         """Return the name of the sensor."""
-        return f"{self.device_name}_xp"
+        return f"{super().name} XP"
 
     @property
     def unique_id(self) -> str:
         """Return a unique ID to use for this entity."""
-        return f"{self.device_name}_xp"
+        return f"{super().unique_id}_xp"
 
     @property
     def native_value(self) -> int:
@@ -119,14 +129,19 @@ class DuolingoCourseXPSensor(DuolingoEntity, SensorEntity):
         self.course_id = course_id
 
     @property
+    def course_name(self) -> str:
+        """Return the translated course name."""
+        return f"{self.course_id}"
+
+    @property
     def name(self) -> str:
         """Return the name of the sensor."""
-        return f"{self.device_name}_{self.course_id}_xp"
+        return f"{super().name} {self.course_name} XP"
 
     @property
     def unique_id(self) -> str:
         """Return a unique ID to use for this entity."""
-        return f"{self.device_name}_{self.course_id}_xp"
+        return f"{super().unique_id}_{self.course_id}_xp"
 
     @property
     def native_value(self) -> int:
@@ -148,6 +163,7 @@ class DuolingoCourseXPSensor(DuolingoEntity, SensorEntity):
         """Return the state attributes."""
         return {
             ATTR_ATTRIBUTION: ATTR_DUO_DATA_PROVIDER,
+            ATTR_DUO_NAME: self.user_dto.name,
             ATTR_DUO_USERNAME: self.user_dto.username,
             ATTR_DUO_COURSE_ID: self.course_id,
         }

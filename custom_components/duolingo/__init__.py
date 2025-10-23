@@ -9,16 +9,19 @@ import homeassistant.helpers.config_validation as cv
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.helpers.update_coordinator import (
+    DataUpdateCoordinator,
+    UpdateFailed,
+)
 
-from custom_components.duolingo.api import DuolingoApiClient
-
+from .api import DuolingoApiClient
 from .const import (
     CONF_USERNAME,
     DOMAIN,
     PLATFORMS,
-    STARTUP_MESSAGE,
+    STARTUP_MESSAGE, CONF_USER_ID,
 )
+from .dto import UserDto
 
 SCAN_INTERVAL = timedelta(seconds=900)
 _LOGGER: logging.Logger = logging.getLogger(__package__)
@@ -27,7 +30,7 @@ _LOGGER: logging.Logger = logging.getLogger(__package__)
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 
-async def async_setup(hass: HomeAssistant, config: dict) -> bool:  # noqa: ARG001
+async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Set up this integration using YAML is not supported."""
     return True
 
@@ -38,13 +41,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.data.setdefault(DOMAIN, {})
         _LOGGER.info(STARTUP_MESSAGE)
 
-    username = entry.data.get(CONF_USERNAME)
-    _LOGGER.debug("Setting up integration with username: %s", username)
+    user_id = entry.data.get(CONF_USER_ID)
+    _LOGGER.debug("Setting up integration with user id: %s", user_id)
     _LOGGER.debug("Entry data: %s", entry.data)
 
-    client = DuolingoApiClient(username, hass.config.time_zone)
+    client = DuolingoApiClient(
+        user_id=user_id,
+        timezone=hass.config.time_zone
+    )
 
-    coordinator = DuolingoDataUpdateCoordinator(hass, client=client)
+    coordinator = DuolingoDataUpdateCoordinator(
+        hass=hass,
+        client=client,
+    )
     await coordinator.async_refresh()
 
     if not coordinator.last_update_success:
@@ -58,7 +67,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     coordinator.platforms.extend(platforms_to_setup)
 
     if platforms_to_setup:
-        await hass.config_entries.async_forward_entry_setups(entry, platforms_to_setup)
+        await hass.config_entries.async_forward_entry_setups(
+            entry=entry,
+            platforms=platforms_to_setup,
+        )
 
     entry.add_update_listener(async_reload_entry)
     return True
@@ -71,15 +83,24 @@ class DuolingoDataUpdateCoordinator(DataUpdateCoordinator):
         """Initialize."""
         self.api = client
         self.platforms = []
+        self.user_dto = UserDto.from_ha({})
 
-        super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=SCAN_INTERVAL)
+        super().__init__(
+            hass=hass,
+            logger=_LOGGER,
+            name=DOMAIN,
+            update_interval=SCAN_INTERVAL,
+        )
 
     async def _async_update_data(self) -> dict[str, Any]:
         """Update data via library."""
         try:
-            return await self.hass.async_add_executor_job(
+            user_data = await self.hass.async_add_executor_job(
                 self.api.get_user_data,
             )
+            self.user_dto = UserDto.from_ha(user_data)
+            return user_data
+
         except Exception as exception:
             raise UpdateFailed(exception) from exception
 

@@ -9,8 +9,7 @@
       }
     },
     "error": {
-      "auth": "User doesnt exist. Please check your username.",
-      "invalid_auth": "Invalid authentication.",
+      "user_not_found": "User not found. Please check the username.",
       "unknown": "Unexpected error."
     },
     "abort": {

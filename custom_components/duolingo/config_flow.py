@@ -1,7 +1,6 @@
 # ruff: noqa: BLE001
 
 """Adds config flow for Duolingo."""
-
 import logging
 from typing import Any
 
@@ -12,6 +11,7 @@ from homeassistant.data_entry_flow import FlowResult
 from .api import DuolingoApiClient
 from .const import (
     CONF_USERNAME,
+    CONF_USER_ID,
     DOMAIN,
 )
 
@@ -39,15 +39,21 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
             # Validate username directly
             try:
-                valid = await self._test_credentials(username)
-                if valid:
+                user_id = await self._get_user_id(username)
+                if user_id is not None:
                     # Store username in config entry
-                    config_data = {CONF_USERNAME: username}
-                    return self.async_create_entry(title=username,
-                                                   data=config_data)
-                self._errors["base"] = "auth"
+                    config_data = {
+                        CONF_USERNAME: username,
+                        CONF_USER_ID: user_id,
+                    }
+                    return self.async_create_entry(
+                        title=f"id:{user_id}",
+                        description=username,
+                        data=config_data,
+                    )
+                self._errors["base"] = "user_not_found"
             except Exception:  # noqa: BLE001
-                self._errors["base"] = "auth"
+                self._errors["base"] = "unknown"
 
             return await self._show_config_form(user_input)
 
@@ -72,13 +78,16 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors=self._errors,
         )
 
-    async def _test_credentials(self, username: str) -> bool:
-        """Return true if credentials is valid."""
+    async def _get_user_id(self, username: str) -> int | None:
+        """Get user ID from username."""
         try:
-            client = DuolingoApiClient(username, self.hass.config.time_zone)
-            await self.hass.async_add_executor_job(
-                client.get_user_data,
+            user_id = await self.hass.async_add_executor_job(
+                DuolingoApiClient.get_user_id, username
             )
-            return True
-        except Exception:
-            return False
+            return user_id
+
+        except Exception as exception:
+            _LOGGER.warning(
+                f"Failed to retrieve user ID for username: {username} with exception: {exception}"
+            )
+            return None

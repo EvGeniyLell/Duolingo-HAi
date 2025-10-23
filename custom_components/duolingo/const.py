@@ -14,11 +14,13 @@ PLATFORMS = [BINARY_SENSOR, SENSOR]
 
 # Configuration and options
 CONF_USERNAME = "username"
+CONF_USER_ID = "user_id"
 
 # Attribution - extra_state_attributes
 ATTR_DUO_DATA_PROVIDER = "Data provided by Duolingo"
 ATTR_DUO_STREAK_LENGTH = "Streak length days"
 ATTR_DUO_STREAK_TODAY = "Streak extended today"
+ATTR_DUO_NAME = "Name"
 ATTR_DUO_USERNAME = "Username"
 ATTR_DUO_COURSE_ID = "Course ID"
 
