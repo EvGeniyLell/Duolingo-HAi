@@ -1,6 +1,5 @@
 """Support for Duolingo streak sensors."""
 import logging
-from typing import Any
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
@@ -38,7 +37,7 @@ async def async_setup_entry(
         DuolingoTotalXPSensor(coordinator, entry),
     ]
 
-    user_dto = UserDto.from_ha(coordinator.data)
+    user_dto = UserDto.from_dict(coordinator.data)
     for course_id in user_dto.courses_xp.keys():
         sensors.append(
             DuolingoCourseXPSensor(coordinator, entry, course_id)
@@ -53,6 +52,7 @@ class DuolingoStreakLengthSensor(DuolingoEntity, SensorEntity):
     @property
     def name(self) -> str:
         """Return the name of the sensor."""
+        _LOGGER.warning(self.coordinator.translations)
         return f"{super().name} Streak Length"
 
     @cached_property
@@ -76,7 +76,7 @@ class DuolingoStreakLengthSensor(DuolingoEntity, SensorEntity):
         return "mdi:calendar"
 
     @property
-    def extra_state_attributes(self) -> dict[str, Any]:
+    def extra_state_attributes(self) -> dict[str, object]:
         """Return the state attributes."""
         return {
             ATTR_ATTRIBUTION: ATTR_DUO_DATA_PROVIDER,
@@ -113,7 +113,7 @@ class DuolingoTotalXPSensor(DuolingoEntity, SensorEntity):
         return "mdi:star"
 
     @property
-    def extra_state_attributes(self) -> dict[str, Any]:
+    def extra_state_attributes(self) -> dict[str, object]:
         """Return the state attributes."""
         return {
             ATTR_ATTRIBUTION: ATTR_DUO_DATA_PROVIDER,
@@ -136,7 +136,7 @@ class DuolingoCourseXPSensor(DuolingoEntity, SensorEntity):
     @property
     def name(self) -> str:
         """Return the name of the sensor."""
-        return f"{super().name} {self.course_name} XP"
+        return f"2{super().name} {self.course_name} XP"
 
     @property
     def unique_id(self) -> str:
@@ -159,7 +159,7 @@ class DuolingoCourseXPSensor(DuolingoEntity, SensorEntity):
         return "mdi:star"
 
     @property
-    def extra_state_attributes(self) -> dict[str, Any]:
+    def extra_state_attributes(self) -> dict[str, object]:
         """Return the state attributes."""
         return {
             ATTR_ATTRIBUTION: ATTR_DUO_DATA_PROVIDER,

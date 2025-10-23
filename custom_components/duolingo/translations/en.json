@@ -16,5 +16,13 @@
       "already_configured": "Account is already configured"
     }
   },
+  "common": {
+    "sensors": {
+      "streak_today_name": "Duo {name}'s Streak Today",
+      "streak_length_name": "Duo {name}'s Streak Length",
+      "total_xp_name": "Duo {name}'s Total XP",
+      "courses_xp_name": "Duo {name}'s {course_name} XP"
+    }
+  },
   "title": "Duolingo Observer"
 }

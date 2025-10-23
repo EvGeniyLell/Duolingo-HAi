@@ -2,18 +2,15 @@
 
 """Adds config flow for Duolingo."""
 import logging
-from typing import Any
 
 import voluptuous as vol
 from homeassistant import config_entries
+from homeassistant.const import CONF_USERNAME
 from homeassistant.data_entry_flow import FlowResult
 
 from .api import DuolingoApiClient
-from .const import (
-    CONF_USERNAME,
-    CONF_USER_ID,
-    DOMAIN,
-)
+from .const import DOMAIN
+from .dto import UserIdentifiersDto
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -29,7 +26,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._errors = {}
 
     async def async_step_user(
-            self, user_input: dict[str, Any] | None = None
+            self, user_input: dict[str, object] | None = None
     ) -> FlowResult:
         """Handle a flow initialized by the user."""
         self._errors = {}
@@ -39,20 +36,17 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
             # Validate username directly
             try:
-                user_id = await self._get_user_id(username)
-                if user_id is not None:
+                user_identifiers = await self._get_user_identifiers(username)
+                if user_identifiers is not None:
                     # Store username in config entry
-                    config_data = {
-                        CONF_USERNAME: username,
-                        CONF_USER_ID: user_id,
-                    }
                     return self.async_create_entry(
-                        title=f"id:{user_id}",
-                        description=username,
-                        data=config_data,
+                        title=user_identifiers.as_entry_title,
+                        data=user_identifiers.to_dict,
                     )
                 self._errors["base"] = "user_not_found"
-            except Exception:  # noqa: BLE001
+            except Exception as exception:  # noqa: BLE001
+                _LOGGER.warning(
+                    f"Exception during username validation: {exception}")
                 self._errors["base"] = "unknown"
 
             return await self._show_config_form(user_input)
@@ -62,7 +56,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def _show_config_form(
             self,
-            user_input: dict[str, Any]
+            user_input: dict[str, object]
     ) -> FlowResult:
         """Show the configuration form to edit location data."""
         return self.async_show_form(
@@ -78,16 +72,21 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors=self._errors,
         )
 
-    async def _get_user_id(self, username: str) -> int | None:
+    async def _get_user_identifiers(
+            self,
+            username: str
+    ) -> UserIdentifiersDto | None:
         """Get user ID from username."""
         try:
-            user_id = await self.hass.async_add_executor_job(
-                DuolingoApiClient.get_user_id, username
+            dto = await self.hass.async_add_executor_job(
+                DuolingoApiClient.get_user_identifiers, username
             )
-            return user_id
+            _LOGGER.warning(f"dto: {dto.to_dict}")
+            return dto
 
         except Exception as exception:
             _LOGGER.warning(
-                f"Failed to retrieve user ID for username: {username} with exception: {exception}"
+                f"Failed to retrieve user ID for username: {username} "
+                f"with exception: {exception}"
             )
             return None

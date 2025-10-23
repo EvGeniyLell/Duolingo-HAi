@@ -1,6 +1,5 @@
 """Support for a Duolingo data sensor."""
 import logging
-from typing import Any
 
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.config_entries import ConfigEntry
@@ -58,7 +57,7 @@ class DuolingoStreakTodaySensor(DuolingoEntity, BinarySensorEntity):
         return "mdi:fire"
 
     @property
-    def extra_state_attributes(self) -> dict[str, Any]:
+    def extra_state_attributes(self) -> dict[str, object]:
         """Return the state attributes."""
         return {
             ATTR_ATTRIBUTION: ATTR_DUO_DATA_PROVIDER,

@@ -12,10 +12,6 @@ BINARY_SENSOR = "binary_sensor"
 SENSOR = "sensor"
 PLATFORMS = [BINARY_SENSOR, SENSOR]
 
-# Configuration and options
-CONF_USERNAME = "username"
-CONF_USER_ID = "user_id"
-
 # Attribution - extra_state_attributes
 ATTR_DUO_DATA_PROVIDER = "Data provided by Duolingo"
 ATTR_DUO_STREAK_LENGTH = "Streak length days"

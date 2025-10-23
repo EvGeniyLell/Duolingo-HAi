@@ -5,7 +5,7 @@ from zoneinfo import ZoneInfo
 
 import requests
 
-from .dto import UserDto
+from .dto import UserDto, UserIdentifiersDto
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -24,7 +24,7 @@ class DuolingoApiClient:
     }
 
     @classmethod
-    def get_user_id(cls, username: str) -> int | None:
+    def get_user_identifiers(cls, username: str) -> UserIdentifiersDto | None:
         """Get user ID from username."""
         url = f"{cls.BASE_URL}/users?username={username}"
 
@@ -39,14 +39,34 @@ class DuolingoApiClient:
             return None
 
         user_data = users[0]
-        return user_data.get("id")
+        if user_data is None:
+            _LOGGER.error(f"Failed to retrieve data for username: {username}")
+            return None
+
+        dto = UserIdentifiersDto(
+            id=user_data.get("id", 0),
+            name=user_data.get("name", ""),
+            username=user_data.get("username", ""),
+        )
+        if dto.id == 0:
+            _LOGGER.error(f"User ID not found for username: {username}")
+            return None
+        if dto.name == "" or dto.username == "" or dto.username != username:
+            _LOGGER.error(
+                f"Incomplete or mismatched user data received "
+                f"for username: {username}"
+            )
+            _LOGGER.error(f"Received data: {user_data}")
+            return None
+
+        return dto
 
     def __init__(self, user_id: int, timezone: str) -> None:
         """Duolingo API Client."""
         self._user_id = user_id
         self._timezone = timezone
 
-    def get_user_data(self) -> dict[str, object]:
+    def get_user_data(self) -> UserDto:
         """Get data for the configured user."""
         url = f"{self.BASE_URL}/users/{self._user_id}"
 
@@ -63,10 +83,10 @@ class DuolingoApiClient:
         tz = ZoneInfo(self._timezone)
         today = datetime.now(tz)
 
-        return _user_data_to_ha(user_data, today)
+        return _user_data_to_dto(user_data, today)
 
 
-def _user_data_to_ha(data: dict, today: datetime) -> dict[str, object]:
+def _user_data_to_dto(data: dict, today: datetime) -> UserDto:
     current_streak = data.get("streakData", {}).get("currentStreak")
     if current_streak:
         streak_today = (
@@ -91,4 +111,4 @@ def _user_data_to_ha(data: dict, today: datetime) -> dict[str, object]:
         streak_length=streak_length,
     )
 
-    return dto.to_ha
+    return dto

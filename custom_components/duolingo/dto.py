@@ -2,6 +2,40 @@ from dataclasses import dataclass
 
 
 @dataclass
+class UserIdentifiersDto:
+    id: int
+    name: str
+    username: str
+
+    ID_KEY = "id"
+    NAME_KEY = "name"
+    USERNAME_KEY = "username"
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "UserIdentifiersDto":
+        """Create UserIdentifiersDto from dictionary."""
+        return cls(
+            id=data.get(UserIdentifiersDto.ID_KEY, 0),
+            name=data.get(UserIdentifiersDto.NAME_KEY, ""),
+            username=data.get(UserIdentifiersDto.USERNAME_KEY, ""),
+        )
+
+    @property
+    def to_dict(self) -> dict:
+        """Convert UserIdentifiersDto to dictionary."""
+        return {
+            UserIdentifiersDto.ID_KEY: self.id,
+            UserIdentifiersDto.NAME_KEY: self.name,
+            UserIdentifiersDto.USERNAME_KEY: self.username,
+        }
+
+    @property
+    def as_entry_title(self) -> str:
+        """Convert UserIdentifiersDto to dictionary."""
+        return f"{self.id} ({self.name})"
+
+
+@dataclass
 class UserDto:
     id: int
     name: str
@@ -11,36 +45,36 @@ class UserDto:
     streak_today: bool
     streak_length: int
 
-    HA_MAPPING_ID = "name"
-    HA_MAPPING_NAME = "name"
-    HA_MAPPING_USERNAME = "username"
-    HA_MAPPING_TOTAL_XP = "total_xp"
-    HA_MAPPING_COURSES_XP = "courses_xp"
-    HA_MAPPING_STREAK_TODAY = "streak_today"
-    HA_MAPPING_STREAK_LENGTH = "streak_length"
+    ID_KEY = "id"
+    NAME_KEY = "name"
+    USERNAME_KEY = "username"
+    TOTAL_XP_KEY = "total_xp"
+    COURSES_XP_KEY = "courses_xp"
+    STREAK_TODAY_KEY = "streak_today"
+    STREAK_LENGTH_KEY = "streak_length"
 
     @classmethod
-    def from_ha(cls, data: dict) -> "UserDto":
-        """Create a UserDto from a coordinator.data."""
+    def from_dict(cls, data: dict) -> "UserDto":
+        """Create UserDto from dictionary."""
         return cls(
-            id=data.get(UserDto.HA_MAPPING_ID, 0),
-            name=data.get(UserDto.HA_MAPPING_NAME, ""),
-            username=data.get(UserDto.HA_MAPPING_USERNAME, ""),
-            total_xp=data.get(UserDto.HA_MAPPING_TOTAL_XP, 0),
-            courses_xp=data.get(UserDto.HA_MAPPING_COURSES_XP, {}),
-            streak_today=data.get(UserDto.HA_MAPPING_STREAK_TODAY, False),
-            streak_length=data.get(UserDto.HA_MAPPING_STREAK_LENGTH, 0),
+            id=data.get(UserDto.ID_KEY, 0),
+            name=data.get(UserDto.NAME_KEY, ""),
+            username=data.get(UserDto.USERNAME_KEY, ""),
+            total_xp=data.get(UserDto.TOTAL_XP_KEY, 0),
+            courses_xp=data.get(UserDto.COURSES_XP_KEY, {}),
+            streak_today=data.get(UserDto.STREAK_TODAY_KEY, False),
+            streak_length=data.get(UserDto.STREAK_LENGTH_KEY, 0),
         )
 
     @property
-    def to_ha(self) -> dict:
-        """Convert UserDto to a coordinator.data."""
+    def to_dict(self) -> dict:
+        """Convert UserDto to a dictionary."""
         return {
-            UserDto.HA_MAPPING_ID: self.id,
-            UserDto.HA_MAPPING_NAME: self.name,
-            UserDto.HA_MAPPING_USERNAME: self.username,
-            UserDto.HA_MAPPING_TOTAL_XP: self.total_xp,
-            UserDto.HA_MAPPING_COURSES_XP: self.courses_xp,
-            UserDto.HA_MAPPING_STREAK_TODAY: self.streak_today,
-            UserDto.HA_MAPPING_STREAK_LENGTH: self.streak_length,
+            UserDto.ID_KEY: self.id,
+            UserDto.NAME_KEY: self.name,
+            UserDto.USERNAME_KEY: self.username,
+            UserDto.TOTAL_XP_KEY: self.total_xp,
+            UserDto.COURSES_XP_KEY: self.courses_xp,
+            UserDto.STREAK_TODAY_KEY: self.streak_today,
+            UserDto.STREAK_LENGTH_KEY: self.streak_length,
         }

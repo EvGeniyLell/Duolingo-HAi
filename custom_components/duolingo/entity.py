@@ -40,7 +40,7 @@ class DuolingoEntity(CoordinatorEntity):
     @cached_property
     def name(self) -> str:
         """Return the name of the sensor."""
-        return f"{NAME} {self.user_dto.name}"
+        return f"Duo {self.user_dto.name}"
 
     @cached_property
     def unique_id(self) -> str:
@@ -53,7 +53,7 @@ class DuolingoEntity(CoordinatorEntity):
         return DeviceInfo(
             name=self.name,
             identifiers={(DOMAIN, self.user_dto.username)},
-            model=f"DUO Observer {VERSION}",
+            model=f"User Observer {VERSION}",
             manufacturer=NAME,
             entry_type=DeviceEntryType.SERVICE,
         )
