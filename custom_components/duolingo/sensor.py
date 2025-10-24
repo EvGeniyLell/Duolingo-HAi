@@ -137,7 +137,7 @@ class DuolingoCourseXPSensor(DuolingoEntity, SensorEntity):
         match = re.search(r"_(\w+)_", course_id)
         key = match.group(1) if match else course_id
         full_key = f"component.{DOMAIN}.common.courses.{key}"
-        _LOGGER.warning(f"Translating course key: {full_key}")
+        _LOGGER.debug(f"Translating course key: {full_key}")
         return self.coordinator.translations.get(full_key, key)
 
     @property

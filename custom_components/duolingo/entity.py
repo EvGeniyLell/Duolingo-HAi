@@ -35,7 +35,7 @@ class DuolingoEntity(CoordinatorEntity):
         super().__init__(coordinator)
         self.coordinator = coordinator
         self.config_entry = config_entry
-        _LOGGER.warning("Setup new entry: %s", config_entry)
+        _LOGGER.debug("Setup new entry: %s", config_entry)
 
     def translation_sensors(
             self,
@@ -52,7 +52,7 @@ class DuolingoEntity(CoordinatorEntity):
         for key, value in data.items():
             pattern = r"\{" + re.escape(key) + r"\}"
             t_string = re.sub(pattern, str(value), t_string)
-        _LOGGER.warning(f"Translated string for {alias}: {t_string}")
+        _LOGGER.debug(f"Translated string for {alias}: {t_string}")
         return t_string
 
     @property

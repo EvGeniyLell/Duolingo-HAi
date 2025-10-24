@@ -45,8 +45,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     )
                 self._errors["base"] = "user_not_found"
             except Exception as exception:  # noqa: BLE001
-                _LOGGER.warning(
-                    f"Exception during username validation: {exception}")
+                _LOGGER.exception(
+                    f"Exception during username validation: {exception}"
+                )
                 self._errors["base"] = "unknown"
 
             return await self._show_config_form(user_input)
@@ -84,7 +85,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return dto
 
         except Exception as exception:
-            _LOGGER.warning(
+            _LOGGER.exception(
                 f"Failed to retrieve user ID for username: {username} "
                 f"with exception: {exception}"
             )

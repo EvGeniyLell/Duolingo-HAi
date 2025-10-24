@@ -14,7 +14,7 @@ from .const import (
     STARTUP_MESSAGE,
 )
 from .coordinator import DuolingoDataUpdateCoordinator
-from .dto import UserDto
+from .dto import UserDto, UserIdentifiersDto
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
@@ -35,7 +35,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     _LOGGER.debug("Entry data: %s", entry.data)
 
-    user_identifiers = UserDto.from_dict(dict(entry.data))
+    user_identifiers = UserIdentifiersDto.from_dict(dict(entry.data))
     _LOGGER.debug("Setting up integration with user id: %s",
                   user_identifiers.id)
 
