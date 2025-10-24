@@ -72,6 +72,11 @@ class DuolingoEntity(CoordinatorEntity):
         return f"{DOMAIN}_{self.identifiers.id}"
 
     @cached_property
+    def suggested_object_id(self) -> str:
+        """Return a unique ID to use for this entity."""
+        return self.unique_id
+
+    @cached_property
     def device_info(self) -> DeviceInfo:
         """Return device information about this entity."""
         return DeviceInfo(

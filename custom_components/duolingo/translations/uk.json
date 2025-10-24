@@ -21,10 +21,10 @@
   },
   "common": {
     "sensors": {
-      "streak_today": "Серія Duo {name} сьогодні",
-      "streak_length": "Довжина серії Duo {name}",
-      "total_xp": "Загальний XP Duo {name}",
-      "course_xp": "XP Duo {name} з {course_name}"
+      "streak_today": "Duo {name} Серія Cьогодні",
+      "streak_length": "Duo {name} Довжина Cерії",
+      "total_xp": "Duo {name} Загальний XP ",
+      "course_xp": "Duo {name} з {course_name} XP"
     },
     "courses": {
       "EN": "Англійська",

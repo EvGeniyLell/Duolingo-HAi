@@ -8,10 +8,9 @@ from homeassistant.helpers.update_coordinator import (
     UpdateFailed,
 )
 
-from . import UserIdentifiersDto
 from .api import DuolingoApi
 from .const import DOMAIN
-from .dto import UserDto
+from .dto import UserDto, UserIdentifiersDto
 
 SCAN_INTERVAL = timedelta(minutes=20)
 
