@@ -10,7 +10,7 @@ from .dto import UserDto, UserIdentifiersDto
 _LOGGER = logging.getLogger(__name__)
 
 
-class DuolingoApiClient:
+class DuolingoApi:
     """Client for communicating with Duolingo API."""
 
     TIMEOUT: int = 10

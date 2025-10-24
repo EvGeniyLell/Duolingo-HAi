@@ -54,7 +54,7 @@ class DuolingoStreakLengthSensor(DuolingoEntity, SensorEntity):
     def name(self) -> str:
         """Return the name of the sensor."""
         return self.translation_sensors("streak_length", {
-            "name": self.user_dto.name,
+            "name": self.user.name,
         })
 
     @cached_property
@@ -65,7 +65,7 @@ class DuolingoStreakLengthSensor(DuolingoEntity, SensorEntity):
     @property
     def native_value(self) -> int:
         """Return the state of the sensor."""
-        return self.user_dto.streak_length
+        return self.user.streak_length
 
     @property
     def native_unit_of_measurement(self) -> str:
@@ -82,7 +82,7 @@ class DuolingoStreakLengthSensor(DuolingoEntity, SensorEntity):
         """Return the state attributes."""
         return {
             ATTR_ATTRIBUTION: ATTR_DUO_DATA_PROVIDER,
-            ATTR_DUO_USERNAME: self.user_dto.username,
+            ATTR_DUO_USERNAME: self.user.username,
         }
 
 
@@ -93,7 +93,7 @@ class DuolingoTotalXPSensor(DuolingoEntity, SensorEntity):
     def name(self) -> str:
         """Return the name of the sensor."""
         return self.translation_sensors("total_xp", {
-            "name": self.user_dto.name,
+            "name": self.user.name,
         })
 
     @cached_property
@@ -104,7 +104,7 @@ class DuolingoTotalXPSensor(DuolingoEntity, SensorEntity):
     @property
     def native_value(self) -> int:
         """Return the state of the sensor."""
-        return self.user_dto.total_xp
+        return self.user.total_xp
 
     @property
     def native_unit_of_measurement(self) -> str:
@@ -121,7 +121,7 @@ class DuolingoTotalXPSensor(DuolingoEntity, SensorEntity):
         """Return the state attributes."""
         return {
             ATTR_ATTRIBUTION: ATTR_DUO_DATA_PROVIDER,
-            ATTR_DUO_USERNAME: self.user_dto.username,
+            ATTR_DUO_USERNAME: self.user.username,
         }
 
 
@@ -149,7 +149,7 @@ class DuolingoCourseXPSensor(DuolingoEntity, SensorEntity):
     def name(self) -> str:
         """Return the name of the sensor."""
         return self.translation_sensors("course_xp", {
-            "name": self.user_dto.name,
+            "name": self.user.name,
             "course_name": self.course_name
         })
 
@@ -161,7 +161,7 @@ class DuolingoCourseXPSensor(DuolingoEntity, SensorEntity):
     @property
     def native_value(self) -> int:
         """Return the state of the sensor."""
-        return self.user_dto.courses_xp.get(self.course_id, 0)
+        return self.user.courses_xp.get(self.course_id, 0)
 
     @property
     def native_unit_of_measurement(self) -> str:
@@ -178,7 +178,7 @@ class DuolingoCourseXPSensor(DuolingoEntity, SensorEntity):
         """Return the state attributes."""
         return {
             ATTR_ATTRIBUTION: ATTR_DUO_DATA_PROVIDER,
-            ATTR_DUO_NAME: self.user_dto.name,
-            ATTR_DUO_USERNAME: self.user_dto.username,
+            ATTR_DUO_NAME: self.user.name,
+            ATTR_DUO_USERNAME: self.user.username,
             ATTR_DUO_COURSE_ID: self.course_id,
         }

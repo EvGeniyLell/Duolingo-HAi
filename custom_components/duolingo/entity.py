@@ -12,7 +12,7 @@ from homeassistant.helpers.update_coordinator import (
 )
 from propcache import cached_property
 
-from . import DuolingoDataUpdateCoordinator
+from . import DuolingoDataUpdateCoordinator, UserIdentifiersDto
 from .const import (
     NAME,
     DOMAIN,
@@ -57,26 +57,26 @@ class DuolingoEntity(CoordinatorEntity):
         return t_string
 
     @property
-    def user_dto(self) -> UserDto:
-        """Return the UserDto associated with this entity."""
-        return self.coordinator.user_dto
+    def identifiers(self) -> UserIdentifiersDto:
+        """Return the UserIdentifiersDto associated with this entity."""
+        return self.coordinator.identifiers
 
-    @cached_property
-    def name(self) -> str:
-        """Return the name of the sensor."""
-        return f"Duo {self.user_dto.name}"
+    @property
+    def user(self) -> UserDto:
+        """Return the UserDto associated with this entity."""
+        return self.coordinator.user
 
     @cached_property
     def unique_id(self) -> str:
         """Return a unique ID to use for this entity."""
-        return f"{DOMAIN}_{self.user_dto.username}"
+        return f"{DOMAIN}_{self.identifiers.id}"
 
     @cached_property
     def device_info(self) -> DeviceInfo:
         """Return device information about this entity."""
         return DeviceInfo(
-            name=f"Duo {self.user_dto.username} Observer",
-            identifiers={(DOMAIN, self.user_dto.username)},
+            name=f"Duo {self.user.name} Observer",
+            identifiers={(DOMAIN, str(self.identifiers.id))},
             model=f"User Observer {VERSION}",
             manufacturer=NAME,
             entry_type=DeviceEntryType.SERVICE,

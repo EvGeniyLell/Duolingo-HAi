@@ -8,7 +8,7 @@ from homeassistant import config_entries
 from homeassistant.const import CONF_USERNAME
 from homeassistant.data_entry_flow import FlowResult
 
-from .api import DuolingoApiClient
+from .api import DuolingoApi
 from .const import DOMAIN
 from .dto import UserIdentifiersDto
 
@@ -34,6 +34,14 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             username = user_input[CONF_USERNAME]
 
+            if not isinstance(username, str):
+                _LOGGER.warning(
+                    "Invalid username type: %s",
+                    type(username),
+                )
+                self._errors["base"] = "unknown"
+                return await self._show_config_form(user_input)
+
             # Validate username directly
             try:
                 user_identifiers = await self._get_user_identifiers(username)
@@ -47,7 +55,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             except Exception as exception:  # noqa: BLE001
                 _LOGGER.exception(
                     "Exception during username validation: %s",
-                    exception
+                    exception,
                 )
                 self._errors["base"] = "unknown"
 
@@ -81,7 +89,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Get user ID from username."""
         try:
             dto = await self.hass.async_add_executor_job(
-                DuolingoApiClient.get_user_identifiers, username
+                DuolingoApi.get_user_identifiers, username
             )
             return dto
 

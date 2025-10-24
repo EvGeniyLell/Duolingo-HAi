@@ -8,7 +8,8 @@ from homeassistant.helpers.update_coordinator import (
     UpdateFailed,
 )
 
-from .api import DuolingoApiClient
+from . import UserIdentifiersDto
+from .api import DuolingoApi
 from .const import DOMAIN
 from .dto import UserDto
 
@@ -20,12 +21,18 @@ _LOGGER: logging.Logger = logging.getLogger(__name__)
 class DuolingoDataUpdateCoordinator(DataUpdateCoordinator):
     """Class to manage fetching data from the API."""
 
-    def __init__(self, hass: HomeAssistant, client: DuolingoApiClient) -> None:
+    def __init__(
+            self,
+            hass: HomeAssistant,
+            api: DuolingoApi,
+            identifiers: UserIdentifiersDto,
+    ) -> None:
         """Initialize."""
-        self.api = client
+        self.api = api
+        self.identifiers = identifiers
+        self.user = UserDto.from_dict({})
         self.platforms = []
         self.translations = {}
-        self.user_dto = UserDto.from_dict({})
 
         super().__init__(
             hass=hass,
@@ -38,10 +45,10 @@ class DuolingoDataUpdateCoordinator(DataUpdateCoordinator):
         """Update data via library."""
         try:
             await self.async_fetch_translations()
-            self.user_dto = await self.hass.async_add_executor_job(
+            self.user = await self.hass.async_add_executor_job(
                 self.api.get_user_data,
             )
-            return self.user_dto.to_dict
+            return self.user.to_dict
 
         except Exception as exception:
             raise UpdateFailed(exception) from exception
