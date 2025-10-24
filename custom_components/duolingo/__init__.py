@@ -8,7 +8,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 
-from .api import DuolingoApiClient
+from .api import DuolingoApi
 from .const import (
     DOMAIN, PLATFORMS,
     STARTUP_MESSAGE,
@@ -39,14 +39,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     _LOGGER.debug("Setting up integration with user id: %s",
                   user_identifiers.id)
 
-    client = DuolingoApiClient(
+    api = DuolingoApi(
         user_id=user_identifiers.id,
         timezone=hass.config.time_zone
     )
 
     coordinator = DuolingoDataUpdateCoordinator(
         hass=hass,
-        client=client,
+        api=api,
+        identifiers=user_identifiers,
     )
 
     await coordinator.async_refresh()

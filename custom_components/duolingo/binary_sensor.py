@@ -40,7 +40,7 @@ class DuolingoStreakTodaySensor(DuolingoEntity, BinarySensorEntity):
     def name(self) -> str:
         """Return the name of the binary_sensor."""
         return self.translation_sensors("streak_today", {
-            "name": self.user_dto.name,
+            "name": self.user.name,
         })
 
     @property
@@ -51,7 +51,7 @@ class DuolingoStreakTodaySensor(DuolingoEntity, BinarySensorEntity):
     @property
     def is_on(self) -> bool:
         """Return true if the binary sensor is on."""
-        return self.user_dto.streak_today
+        return self.user.streak_today
 
     @property
     def icon(self) -> str:
@@ -63,6 +63,6 @@ class DuolingoStreakTodaySensor(DuolingoEntity, BinarySensorEntity):
         """Return the state attributes."""
         return {
             ATTR_ATTRIBUTION: ATTR_DUO_DATA_PROVIDER,
-            ATTR_DUO_STREAK_TODAY: self.user_dto.streak_today,
-            ATTR_DUO_STREAK_LENGTH: self.user_dto.streak_length,
+            ATTR_DUO_STREAK_TODAY: self.user.streak_today,
+            ATTR_DUO_STREAK_LENGTH: self.user.streak_length,
         }
