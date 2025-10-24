@@ -35,12 +35,12 @@ class DuolingoApiClient:
 
         users = json_data.get("users", [])
         if not users:
-            _LOGGER.error(f"No user found with username: {username}")
+            _LOGGER.error("No user found with username: %s", username)
             return None
 
         user_data = users[0]
         if user_data is None:
-            _LOGGER.error(f"Failed to retrieve data for username: {username}")
+            _LOGGER.error("Failed to retrieve data for username: %s", username)
             return None
 
         dto = UserIdentifiersDto(
@@ -49,14 +49,14 @@ class DuolingoApiClient:
             username=user_data.get("username", ""),
         )
         if dto.id == 0:
-            _LOGGER.error(f"User ID not found for username: {username}")
+            _LOGGER.error("User ID not found for username: %s", username)
             return None
         if dto.name == "" or dto.username == "" or dto.username != username:
             _LOGGER.error(
-                f"Incomplete or mismatched user data received "
-                f"for username: {username}"
+                "Incomplete or mismatched user data received for username: %s",
+                username
             )
-            _LOGGER.error(f"Received data: {user_data}")
+            _LOGGER.error("Received data: %s", user_data)
             return None
 
         return dto

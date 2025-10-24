@@ -46,7 +46,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self._errors["base"] = "user_not_found"
             except Exception as exception:  # noqa: BLE001
                 _LOGGER.exception(
-                    f"Exception during username validation: {exception}"
+                    "Exception during username validation: %s",
+                    exception
                 )
                 self._errors["base"] = "unknown"
 
@@ -86,7 +87,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         except Exception as exception:
             _LOGGER.exception(
-                f"Failed to retrieve user ID for username: {username} "
-                f"with exception: {exception}"
+                "Failed to retrieve user ID for username: %s with exception: %s",
+                username, exception,
             )
             return None

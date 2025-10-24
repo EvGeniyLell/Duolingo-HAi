@@ -46,13 +46,14 @@ class DuolingoEntity(CoordinatorEntity):
         full_key = f"component.{DOMAIN}.common.sensors.{alias}"
         t_string = self.coordinator.translations.get(full_key)
         if not t_string:
-            _LOGGER.warning(f"Translation missing for key: {full_key}")
+            _LOGGER.warning("Translation missing for key: %s", full_key)
             return None
 
         for key, value in data.items():
             pattern = r"\{" + re.escape(key) + r"\}"
             t_string = re.sub(pattern, str(value), t_string)
-        _LOGGER.debug(f"Translated string for {alias}: {t_string}")
+
+        _LOGGER.debug("Translated string for %s: %s", alias, t_string)
         return t_string
 
     @property
