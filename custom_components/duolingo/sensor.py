@@ -1,6 +1,6 @@
 """Support for Duolingo streak sensors."""
-
-from typing import Any
+import logging
+import re
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
@@ -9,11 +9,15 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from propcache import cached_property
 
+from . import DuolingoDataUpdateCoordinator
 from .const import (
     DOMAIN, ATTR_DUO_DATA_PROVIDER, ATTR_DUO_USERNAME, ATTR_DUO_COURSE_ID,
+    ATTR_DUO_NAME,
 )
 from .dto import UserDto
 from .entity import DuolingoEntity
+
+_LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
@@ -23,12 +27,18 @@ async def async_setup_entry(
 ) -> None:
     """Set up sensor platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
+    if not isinstance(coordinator, DuolingoDataUpdateCoordinator):
+        _LOGGER.error(
+            "Coordinator is not of type DuolingoDataUpdateCoordinator"
+        )
+        return
+
     sensors: list[SensorEntity] = [
         DuolingoStreakLengthSensor(coordinator, entry),
         DuolingoTotalXPSensor(coordinator, entry),
     ]
 
-    user_dto = UserDto.from_ha(coordinator.data)
+    user_dto = UserDto.from_dict(coordinator.data)
     for course_id in user_dto.courses_xp.keys():
         sensors.append(
             DuolingoCourseXPSensor(coordinator, entry, course_id)
@@ -43,17 +53,19 @@ class DuolingoStreakLengthSensor(DuolingoEntity, SensorEntity):
     @property
     def name(self) -> str:
         """Return the name of the sensor."""
-        return f"{self.device_name}_streak_length"
+        return self.translation_sensors("streak_length", {
+            "name": self.user.name,
+        })
 
     @cached_property
     def unique_id(self) -> str:
         """Return a unique ID to use for this entity."""
-        return f"{self.device_name}_streak_length"
+        return f"{super().unique_id}_streak_length"
 
     @property
     def native_value(self) -> int:
         """Return the state of the sensor."""
-        return self.user_dto.streak_length
+        return self.user.streak_length
 
     @property
     def native_unit_of_measurement(self) -> str:
@@ -66,11 +78,11 @@ class DuolingoStreakLengthSensor(DuolingoEntity, SensorEntity):
         return "mdi:calendar"
 
     @property
-    def extra_state_attributes(self) -> dict[str, Any]:
+    def extra_state_attributes(self) -> dict[str, object]:
         """Return the state attributes."""
         return {
             ATTR_ATTRIBUTION: ATTR_DUO_DATA_PROVIDER,
-            ATTR_DUO_USERNAME: self.user_dto.username,
+            ATTR_DUO_USERNAME: self.user.username,
         }
 
 
@@ -80,17 +92,19 @@ class DuolingoTotalXPSensor(DuolingoEntity, SensorEntity):
     @property
     def name(self) -> str:
         """Return the name of the sensor."""
-        return f"{self.device_name}_xp"
+        return self.translation_sensors("total_xp", {
+            "name": self.user.name,
+        })
 
-    @property
+    @cached_property
     def unique_id(self) -> str:
         """Return a unique ID to use for this entity."""
-        return f"{self.device_name}_xp"
+        return f"{super().unique_id}_xp"
 
     @property
     def native_value(self) -> int:
         """Return the state of the sensor."""
-        return self.user_dto.total_xp
+        return self.user.total_xp
 
     @property
     def native_unit_of_measurement(self) -> str:
@@ -103,11 +117,11 @@ class DuolingoTotalXPSensor(DuolingoEntity, SensorEntity):
         return "mdi:star"
 
     @property
-    def extra_state_attributes(self) -> dict[str, Any]:
+    def extra_state_attributes(self) -> dict[str, object]:
         """Return the state attributes."""
         return {
             ATTR_ATTRIBUTION: ATTR_DUO_DATA_PROVIDER,
-            ATTR_DUO_USERNAME: self.user_dto.username,
+            ATTR_DUO_USERNAME: self.user.username,
         }
 
 
@@ -118,20 +132,36 @@ class DuolingoCourseXPSensor(DuolingoEntity, SensorEntity):
         super().__init__(coordinator, config_entry)
         self.course_id = course_id
 
+    def translation_courses(self, course_id: str) -> str:
+        """Return the translated string for course id."""
+        match = re.search(r"_(\w+)_", course_id)
+        key = match.group(1) if match else course_id
+        full_key = f"component.{DOMAIN}.common.courses.{key}"
+        _LOGGER.debug(f"Translating course key: {full_key}")
+        return self.coordinator.translations.get(full_key, key)
+
+    @property
+    def course_name(self) -> str:
+        """Return the translated course name."""
+        return self.translation_courses(self.course_id)
+
     @property
     def name(self) -> str:
         """Return the name of the sensor."""
-        return f"{self.device_name}_{self.course_id}_xp"
+        return self.translation_sensors("course_xp", {
+            "name": self.user.name,
+            "course_name": self.course_name
+        })
 
-    @property
+    @cached_property
     def unique_id(self) -> str:
         """Return a unique ID to use for this entity."""
-        return f"{self.device_name}_{self.course_id}_xp"
+        return f"{super().unique_id}_{self.course_id}_xp"
 
     @property
     def native_value(self) -> int:
         """Return the state of the sensor."""
-        return self.user_dto.courses_xp.get(self.course_id, 0)
+        return self.user.courses_xp.get(self.course_id, 0)
 
     @property
     def native_unit_of_measurement(self) -> str:
@@ -141,13 +171,14 @@ class DuolingoCourseXPSensor(DuolingoEntity, SensorEntity):
     @property
     def icon(self) -> str:
         """Return the icon to use in the frontend."""
-        return "mdi:star"
+        return "mdi:progress-star"
 
     @property
-    def extra_state_attributes(self) -> dict[str, Any]:
+    def extra_state_attributes(self) -> dict[str, object]:
         """Return the state attributes."""
         return {
             ATTR_ATTRIBUTION: ATTR_DUO_DATA_PROVIDER,
-            ATTR_DUO_USERNAME: self.user_dto.username,
+            ATTR_DUO_NAME: self.user.name,
+            ATTR_DUO_USERNAME: self.user.username,
             ATTR_DUO_COURSE_ID: self.course_id,
         }

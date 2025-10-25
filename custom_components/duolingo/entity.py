@@ -1,4 +1,6 @@
 """DuolingoEntity class."""
+import logging
+import re
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.device_registry import (
@@ -7,15 +9,18 @@ from homeassistant.helpers.device_registry import (
 )
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
-    DataUpdateCoordinator,
 )
 from propcache import cached_property
 
+from . import DuolingoDataUpdateCoordinator, UserIdentifiersDto
 from .const import (
     NAME,
-    DOMAIN, VERSION,
+    DOMAIN,
+    VERSION,
 )
 from .dto import UserDto
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class DuolingoEntity(CoordinatorEntity):
@@ -23,41 +28,61 @@ class DuolingoEntity(CoordinatorEntity):
 
     def __init__(
             self,
-            coordinator: DataUpdateCoordinator,
+            coordinator: DuolingoDataUpdateCoordinator,
             config_entry: ConfigEntry,
     ) -> None:
         """Initialize the entity."""
         super().__init__(coordinator)
+        self.coordinator = coordinator
         self.config_entry = config_entry
-        self.coordinator.async_add_listener(self._handle_coordinator_update)
+        _LOGGER.debug("Setup new entry: %s", config_entry)
 
-    def _handle_coordinator_update(self) -> None:
-        """Clear the cached user_dto property."""
-        if "user_dto" in self.__dict__:
-            del self.__dict__["user_dto"]
+    def translation_sensors(
+            self,
+            alias: str,
+            data: dict[str, str]
+    ) -> str | None:
+        """Return the translated string for course id."""
+        full_key = f"component.{DOMAIN}.common.sensors.{alias}"
+        t_string = self.coordinator.translations.get(full_key)
+        if not t_string:
+            _LOGGER.warning("Translation missing for key: %s", full_key)
+            return None
 
-    @cached_property
-    def user_dto(self) -> UserDto:
-        """Convert coordinator data to UserDto."""
-        return UserDto.from_ha(self.coordinator.data)
+        for key, value in data.items():
+            pattern = r"\{" + re.escape(key) + r"\}"
+            t_string = re.sub(pattern, str(value), t_string)
 
-    @cached_property
-    def device_name(self) -> str:
-        """Return a raw ID of this entity."""
-        return f"{DOMAIN}_{self.user_dto.username}"
+        _LOGGER.debug("Translated string for %s: %s", alias, t_string)
+        return t_string
+
+    @property
+    def identifiers(self) -> UserIdentifiersDto:
+        """Return the UserIdentifiersDto associated with this entity."""
+        return self.coordinator.identifiers
+
+    @property
+    def user(self) -> UserDto:
+        """Return the UserDto associated with this entity."""
+        return self.coordinator.user
 
     @cached_property
     def unique_id(self) -> str:
         """Return a unique ID to use for this entity."""
-        return self.config_entry.entry_id
+        return f"{DOMAIN}_{self.identifiers.id}"
+
+    @cached_property
+    def suggested_object_id(self) -> str:
+        """Return a unique ID to use for this entity."""
+        return self.unique_id
 
     @cached_property
     def device_info(self) -> DeviceInfo:
         """Return device information about this entity."""
         return DeviceInfo(
-            name=self.device_name,
-            identifiers={(DOMAIN, self.user_dto.username)},
-            model=f"EI_DUO_{VERSION}_HAi",
+            name=f"Duo {self.user.name} Observer",
+            identifiers={(DOMAIN, str(self.identifiers.id))},
+            model=f"User Observer {VERSION}",
             manufacturer=NAME,
             entry_type=DeviceEntryType.SERVICE,
         )
