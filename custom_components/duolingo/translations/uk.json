@@ -3,9 +3,16 @@
     "step": {
       "user": {
         "data": {
-          "username": "Ім'я користувача"
+          "username": "Спостережуваний username",
+          "jwt_token": "JWT токен Duolingo"
         },
-        "description": "Введіть ім'я користувача, за яким ви хочете спостерігати."
+        "description": "Введіть username того, за ким спостерігаємо, та ваш JWT токен Duolingo (скопіюйте значення cookie jwt_token з браузера після входу на duolingo.com)."
+      },
+      "reauth_confirm": {
+        "data": {
+          "jwt_token": "JWT токен Duolingo"
+        },
+        "description": "Вставте новий JWT токен Duolingo для відновлення з'єднання."
       }
     },
     "entry": {
@@ -13,10 +20,12 @@
     },
     "error": {
       "user_not_found": "Користувача не знайдено. Будь ласка, перевірте ім'я користувача.",
+      "invalid_auth": "Невірний або протермінований JWT токен.",
       "unknown": "Неочікувана помилка."
     },
     "abort": {
-      "already_configured": "Обліковий запис вже налаштовано"
+      "already_configured": "Обліковий запис вже налаштовано",
+      "reauth_successful": "Повторна автентифікація успішна"
     }
   },
   "common": {

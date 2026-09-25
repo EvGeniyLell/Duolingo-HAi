@@ -1,5 +1,7 @@
 """Constants for Duolingo."""
 
+JWT_TOKEN = "jwt_token"
+
 # Base component constants
 NAME = "Duolingo Observer"
 DOMAIN = "duolingo"
