@@ -8,11 +8,8 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 
-from .api import DuolingoApi
-from .const import (
-    DOMAIN, PLATFORMS,
-    STARTUP_MESSAGE,
-)
+from .api import DuolingoApi, DuolingoAuthError
+from .const import DOMAIN, JWT_TOKEN, PLATFORMS, STARTUP_MESSAGE
 from .coordinator import DuolingoDataUpdateCoordinator
 from .dto import UserDto, UserIdentifiersDto
 
@@ -36,16 +33,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     _LOGGER.debug("Entry data: %s", entry.data)
 
     user_identifiers = UserIdentifiersDto.from_dict(dict(entry.data))
-    _LOGGER.debug("Setting up integration with user id: %s",
-                  user_identifiers.id)
+    _LOGGER.debug("Setting up integration with user id: %s", user_identifiers.id)
 
-    api = DuolingoApi(
-        user_id=user_identifiers.id,
-        timezone=hass.config.time_zone
-    )
+    jwt_token = entry.data.get(JWT_TOKEN, "")
+    if not jwt_token:
+        _LOGGER.warning("No JWT token stored for %s — requesting re-authentication",
+                        user_identifiers.username)
+        entry.async_start_reauth(hass)
+        raise ConfigEntryNotReady("JWT token missing — re-authentication required")
+
+    api = DuolingoApi(jwt_token=jwt_token)
 
     coordinator = DuolingoDataUpdateCoordinator(
         hass=hass,
+        entry=entry,
         api=api,
         identifiers=user_identifiers,
     )

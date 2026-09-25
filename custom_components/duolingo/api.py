@@ -10,6 +10,10 @@ from .dto import UserDto, UserIdentifiersDto
 _LOGGER = logging.getLogger(__name__)
 
 
+class DuolingoAuthError(Exception):
+    """Raised when Duolingo returns 401 Unauthorized."""
+
+
 class DuolingoApi:
     """Client for communicating with Duolingo API."""
 
@@ -61,26 +65,27 @@ class DuolingoApi:
 
         return dto
 
-    def __init__(self, user_id: int, timezone: str) -> None:
+    def __init__(self, jwt_token: str) -> None:
         """Duolingo API Client."""
-        self._user_id = user_id
-        self._timezone = timezone
+        self._jwt_token = jwt_token
 
-    def get_user_data(self) -> UserDto:
-        """Get data for the configured user."""
-        url = f"{self.BASE_URL}/users/{self._user_id}"
+    def get_user_data(self, user_id: int, timezone: str) -> UserDto:
+        """Get data for the given user using jwt_token cookie auth."""
+        url = f"{self.BASE_URL}/users/{user_id}"
 
-        response = requests.get(url, headers=self.HEADERS, timeout=self.TIMEOUT)
+        headers = {**self.HEADERS, "Cookie": f"jwt_token={self._jwt_token}"}
+
+        response = requests.get(url, headers=headers, timeout=self.TIMEOUT)
+        if response.status_code == 401:
+            raise DuolingoAuthError("Duolingo JWT token is invalid or revoked")
         response.raise_for_status()
 
         user_data = response.json()
         if user_data is None:
-            msg = f"Failed to retrieve data for user: {self._user_id}"
+            msg = f"Failed to retrieve data for user: {user_id}"
             raise ValueError(msg)
 
-        # Use Home Assistant's configured timezone
-        # Duolingo API returns dates in user's timezone
-        tz = ZoneInfo(self._timezone)
+        tz = ZoneInfo(timezone)
         today = datetime.now(tz)
 
         return _user_data_to_dto(user_data, today)

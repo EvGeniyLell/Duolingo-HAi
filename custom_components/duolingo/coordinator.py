@@ -1,6 +1,7 @@
 import logging
 from datetime import timedelta
 
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.translation import async_get_translations
 from homeassistant.helpers.update_coordinator import (
@@ -8,7 +9,7 @@ from homeassistant.helpers.update_coordinator import (
     UpdateFailed,
 )
 
-from .api import DuolingoApi
+from .api import DuolingoApi, DuolingoAuthError
 from .const import DOMAIN
 from .dto import UserDto, UserIdentifiersDto
 
@@ -23,10 +24,12 @@ class DuolingoDataUpdateCoordinator(DataUpdateCoordinator):
     def __init__(
             self,
             hass: HomeAssistant,
+            entry: ConfigEntry,
             api: DuolingoApi,
             identifiers: UserIdentifiersDto,
     ) -> None:
         """Initialize."""
+        self.entry = entry
         self.api = api
         self.identifiers = identifiers
         self.user = UserDto.from_dict({})
@@ -46,8 +49,14 @@ class DuolingoDataUpdateCoordinator(DataUpdateCoordinator):
             await self.async_fetch_translations()
             self.user = await self.hass.async_add_executor_job(
                 self.api.get_user_data,
+                self.identifiers.id,
+                self.hass.config.time_zone,
             )
             return self.user.to_dict
+
+        except DuolingoAuthError as exception:
+            self.entry.async_start_reauth(self.hass)
+            raise UpdateFailed("Authentication failed — re-authentication required") from exception
 
         except Exception as exception:
             raise UpdateFailed(exception) from exception
