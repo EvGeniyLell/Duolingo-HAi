@@ -1,5 +1,6 @@
 import logging
-from datetime import timedelta
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -10,7 +11,7 @@ from homeassistant.helpers.update_coordinator import (
 )
 
 from .api import DuolingoApi, DuolingoAuthError
-from .const import DOMAIN
+from .const import DOMAIN,  CONFIG_ENTRY_XP_SNAPSHOT_KEY, CONFIG_ENTRY_SNAPSHOT_DATE_KEY
 from .dto import UserDto, UserIdentifiersDto
 
 SCAN_INTERVAL = timedelta(minutes=20)
@@ -52,6 +53,7 @@ class DuolingoDataUpdateCoordinator(DataUpdateCoordinator):
                 self.identifiers.id,
                 self.hass.config.time_zone,
             )
+            await self._update_xp_snapshot(self.user)
             return self.user.to_dict
 
         except DuolingoAuthError as exception:
@@ -60,6 +62,30 @@ class DuolingoDataUpdateCoordinator(DataUpdateCoordinator):
 
         except Exception as exception:
             raise UpdateFailed(exception) from exception
+
+    async def _update_xp_snapshot(self, user: UserDto) -> None:
+        """Store start-of-day XP snapshot in entry.data and compute today's gain."""
+        tz = ZoneInfo(self.hass.config.time_zone)
+        today = datetime.now(tz).strftime("%Y-%m-%d")
+
+        stored_date = self.entry.data.get(CONFIG_ENTRY_SNAPSHOT_DATE_KEY, "")
+        stored_snapshot: dict[str, int] = self.entry.data.get(CONFIG_ENTRY_XP_SNAPSHOT_KEY, {})
+
+        if stored_date != today:
+            self.hass.config_entries.async_update_entry(
+                self.entry,
+                data={
+                    **self.entry.data,
+                    CONFIG_ENTRY_SNAPSHOT_DATE_KEY: today,
+                    CONFIG_ENTRY_XP_SNAPSHOT_KEY: dict(user.courses_xp),
+                },
+            )
+            stored_snapshot = dict(user.courses_xp)
+
+        user.courses_xp_gain = {
+            course_id: max(0, xp - stored_snapshot.get(course_id, xp))
+            for course_id, xp in user.courses_xp.items()
+        }
 
     async def async_fetch_translations(self) -> None:
         """Fetch translations."""

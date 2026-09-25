@@ -3,14 +3,13 @@ import logging
 
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import ATTR_ATTRIBUTION
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import DuolingoDataUpdateCoordinator
 from .const import (
-    DOMAIN, ATTR_DUO_DATA_PROVIDER, ATTR_DUO_STREAK_TODAY,
-    ATTR_DUO_STREAK_LENGTH,
+    DOMAIN,
+    ATTR_DUO_STREAK_TODAY, ATTR_DUO_STREAK_LENGTH,
 )
 from .entity import DuolingoEntity
 
@@ -62,7 +61,6 @@ class DuolingoStreakTodaySensor(DuolingoEntity, BinarySensorEntity):
     def extra_state_attributes(self) -> dict[str, object]:
         """Return the state attributes."""
         return {
-            ATTR_ATTRIBUTION: ATTR_DUO_DATA_PROVIDER,
             ATTR_DUO_STREAK_TODAY: self.user.streak_today,
             ATTR_DUO_STREAK_LENGTH: self.user.streak_length,
         }

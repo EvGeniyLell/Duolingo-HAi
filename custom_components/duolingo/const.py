@@ -5,7 +5,7 @@ JWT_TOKEN = "jwt_token"
 # Base component constants
 NAME = "Duolingo Observer"
 DOMAIN = "duolingo"
-VERSION = "0.1.0"
+VERSION = "0.1.2"
 
 ISSUE_URL = "https://github.com/EvGeniyLell/Duolingo-HAi/issues"
 
@@ -15,12 +15,18 @@ SENSOR = "sensor"
 PLATFORMS = [BINARY_SENSOR, SENSOR]
 
 # Attribution - extra_state_attributes
-ATTR_DUO_DATA_PROVIDER = "Data provided by Duolingo"
-ATTR_DUO_STREAK_LENGTH = "Streak length days"
-ATTR_DUO_STREAK_TODAY = "Streak extended today"
-ATTR_DUO_NAME = "Name"
-ATTR_DUO_USERNAME = "Username"
-ATTR_DUO_COURSE_ID = "Course ID"
+ATTR_DUO_STREAK_LENGTH = "streak_length"
+ATTR_DUO_STREAK_TODAY = "streak_today"
+ATTR_DUO_NAME = "name"
+ATTR_DUO_USERNAME = "username"
+ATTR_DUO_COURSE_ID = "course_id"
+ATTR_DUO_XP_YESTERDAY = "xp_yesterday"
+ATTR_DUO_XP_TODAY_GAIN = "xp_today_gain"
+
+# Config Entry Data
+CONFIG_ENTRY_XP_SNAPSHOT_KEY = "xp_snapshot"
+CONFIG_ENTRY_SNAPSHOT_DATE_KEY = "snapshot_date"
+
 
 STARTUP_MESSAGE = f"""
 -------------------------------------------------------------------

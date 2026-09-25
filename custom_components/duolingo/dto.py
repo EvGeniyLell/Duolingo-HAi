@@ -44,6 +44,11 @@ class UserDto:
     courses_xp: dict[str, int]
     streak_today: bool
     streak_length: int
+    courses_xp_gain: dict[str, int] = None
+
+    def __post_init__(self):
+        if self.courses_xp_gain is None:
+            self.courses_xp_gain = {}
 
     ID_KEY = "id"
     NAME_KEY = "name"

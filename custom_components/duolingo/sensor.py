@@ -4,15 +4,16 @@ import re
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import ATTR_ATTRIBUTION
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from propcache import cached_property
 
 from . import DuolingoDataUpdateCoordinator
 from .const import (
-    DOMAIN, ATTR_DUO_DATA_PROVIDER, ATTR_DUO_USERNAME, ATTR_DUO_COURSE_ID,
-    ATTR_DUO_NAME,
+    DOMAIN,
+    ATTR_DUO_USERNAME, ATTR_DUO_COURSE_ID, ATTR_DUO_NAME,
+    ATTR_DUO_XP_YESTERDAY, ATTR_DUO_XP_TODAY_GAIN,
+    CONFIG_ENTRY_XP_SNAPSHOT_KEY,
 )
 from .dto import UserDto
 from .entity import DuolingoEntity
@@ -81,7 +82,6 @@ class DuolingoStreakLengthSensor(DuolingoEntity, SensorEntity):
     def extra_state_attributes(self) -> dict[str, object]:
         """Return the state attributes."""
         return {
-            ATTR_ATTRIBUTION: ATTR_DUO_DATA_PROVIDER,
             ATTR_DUO_USERNAME: self.user.username,
         }
 
@@ -120,7 +120,6 @@ class DuolingoTotalXPSensor(DuolingoEntity, SensorEntity):
     def extra_state_attributes(self) -> dict[str, object]:
         """Return the state attributes."""
         return {
-            ATTR_ATTRIBUTION: ATTR_DUO_DATA_PROVIDER,
             ATTR_DUO_USERNAME: self.user.username,
         }
 
@@ -176,9 +175,13 @@ class DuolingoCourseXPSensor(DuolingoEntity, SensorEntity):
     @property
     def extra_state_attributes(self) -> dict[str, object]:
         """Return the state attributes."""
+        snapshot: dict[str, int] = self.config_entry.data.get(CONFIG_ENTRY_XP_SNAPSHOT_KEY, {})
+        xp_yesterday = snapshot.get(self.course_id, 0)
+        xp_today_gain = self.user.courses_xp_gain.get(self.course_id, 0)
         return {
-            ATTR_ATTRIBUTION: ATTR_DUO_DATA_PROVIDER,
             ATTR_DUO_NAME: self.user.name,
             ATTR_DUO_USERNAME: self.user.username,
             ATTR_DUO_COURSE_ID: self.course_id,
+            ATTR_DUO_XP_YESTERDAY: xp_yesterday,
+            ATTR_DUO_XP_TODAY_GAIN: xp_today_gain,
         }
